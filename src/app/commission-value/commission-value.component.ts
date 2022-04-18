@@ -15,7 +15,11 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs';
-import { CommissionService } from '../services/commission/commission.service';
+import {
+  CommissionService,
+  MAX_COMMISSION_VALUE,
+  MIN_COMMISSION_VALUE,
+} from '../services/commission/commission.service';
 import { OnDestroyService } from '../services/destroy/on-destroy.service';
 import { RxOperatorService } from '../services/rx-operator/rx-operator.service';
 
@@ -41,9 +45,6 @@ export class CommissionValueComponent implements OnInit {
   onViewCommissionInputEl = new Subject<ElementRef<HTMLInputElement>>();
   onViewComissionSliderEl = new Subject<ElementRef<HTMLInputElement>>();
 
-  maxCommissionValue = 3;
-  minCommissionValue = 0;
-
   onInputBlurStatus$ = this.onViewCommissionInputEl.pipe(
     switchMap((ref) =>
       fromEvent(ref.nativeElement, 'blur').pipe(
@@ -51,9 +52,9 @@ export class CommissionValueComponent implements OnInit {
           const value = ref.nativeElement.value;
           if (value === '' || value === undefined || !isFinite(Number(value))) {
             return 'noValue';
-          } else if (Number(value) > this.maxCommissionValue) {
+          } else if (Number(value) > MAX_COMMISSION_VALUE) {
             return 'exceedMaximum';
-          } else if (Number(value) < this.minCommissionValue) {
+          } else if (Number(value) < MIN_COMMISSION_VALUE) {
             return 'belowMinimum';
           }
           return 'idle';
@@ -85,12 +86,12 @@ export class CommissionValueComponent implements OnInit {
 
   onInputValueOnBlurExceedMaxValue$ = this.onInputBlurStatus$.pipe(
     filter((status) => status === 'exceedMaximum'),
-    mapTo(this.maxCommissionValue)
+    mapTo(MAX_COMMISSION_VALUE)
   );
 
   onInputValueOnBlurBelowMinValue$ = this.onInputBlurStatus$.pipe(
     filter((status) => status === 'belowMinimum'),
-    mapTo(this.minCommissionValue)
+    mapTo(MIN_COMMISSION_VALUE)
   );
 
   changesInputValue$ = merge(

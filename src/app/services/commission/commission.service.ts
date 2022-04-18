@@ -3,6 +3,8 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, ReplaySubject } from 'rxjs';
 import { RxOperatorService } from '../rx-operator/rx-operator.service';
 
+export const MAX_COMMISSION_VALUE = 3;
+export const MIN_COMMISSION_VALUE = 0;
 export const enum LANG {
   EN = 'EN',
   FR = 'FR',
@@ -26,11 +28,11 @@ export class CommissionService {
     map((commissionType) => {
       switch (commissionType) {
         case COMMISSION_TYPE.NORMAL:
-          return 0;
+          return MIN_COMMISSION_VALUE;
         case COMMISSION_TYPE.RECYCLE:
-          return 3;
+          return MAX_COMMISSION_VALUE;
         default:
-          return 0;
+          return MIN_COMMISSION_VALUE;
       }
     }),
     this.rx.stateful()
