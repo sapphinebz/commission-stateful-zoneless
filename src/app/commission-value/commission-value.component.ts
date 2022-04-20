@@ -23,6 +23,13 @@ import {
 import { OnDestroyService } from '../services/destroy/on-destroy.service';
 import { RxOperatorService } from '../services/rx-operator/rx-operator.service';
 
+const enum INPUT_BLUR_STATUS {
+  NO_VALUE,
+  EXCEED_MAXIMUM,
+  BELOW_MINIMUM,
+  IDLE,
+}
+
 @Component({
   selector: 'app-commission-value',
   templateUrl: './commission-value.component.html',
@@ -51,13 +58,13 @@ export class CommissionValueComponent implements OnInit {
         map(() => {
           const value = ref.nativeElement.value;
           if (value === '' || value === undefined || !isFinite(Number(value))) {
-            return 'noValue';
+            return INPUT_BLUR_STATUS.NO_VALUE;
           } else if (Number(value) > MAX_COMMISSION_VALUE) {
-            return 'exceedMaximum';
+            return INPUT_BLUR_STATUS.EXCEED_MAXIMUM;
           } else if (Number(value) < MIN_COMMISSION_VALUE) {
-            return 'belowMinimum';
+            return INPUT_BLUR_STATUS.BELOW_MINIMUM;
           }
-          return 'idle';
+          return INPUT_BLUR_STATUS.IDLE;
         })
       )
     ),
@@ -80,17 +87,17 @@ export class CommissionValueComponent implements OnInit {
   ).pipe(this.rx.stateful());
 
   onInputValueOnBlurNoValue$ = this.onInputBlurStatus$.pipe(
-    filter((status) => status === 'noValue'),
+    filter((status) => status === INPUT_BLUR_STATUS.NO_VALUE),
     withLatestFrom(this.commissionSliderValue$, (_, value) => value)
   );
 
   onInputValueOnBlurExceedMaxValue$ = this.onInputBlurStatus$.pipe(
-    filter((status) => status === 'exceedMaximum'),
+    filter((status) => status === INPUT_BLUR_STATUS.EXCEED_MAXIMUM),
     mapTo(MAX_COMMISSION_VALUE)
   );
 
   onInputValueOnBlurBelowMinValue$ = this.onInputBlurStatus$.pipe(
-    filter((status) => status === 'belowMinimum'),
+    filter((status) => status === INPUT_BLUR_STATUS.BELOW_MINIMUM),
     mapTo(MIN_COMMISSION_VALUE)
   );
 
@@ -102,16 +109,16 @@ export class CommissionValueComponent implements OnInit {
     this.onInputValueOnBlurBelowMinValue$
   );
 
+  changesSliderValue$ = merge(
+    this.commissionInputValue$,
+    this.comissionService.initialCommissionValueOfComissionType$
+  );
+
   changeCommissionInputValueEffect = this.changesInputValue$.pipe(
     combineLatestWith(this.onViewCommissionInputEl),
     this.rx.effect(([sliderValue, inputRef]) => {
       inputRef.nativeElement.value = `${sliderValue}`;
     })
-  );
-
-  changesSliderValue$ = merge(
-    this.commissionInputValue$,
-    this.comissionService.initialCommissionValueOfComissionType$
   );
 
   changeCommissionSliderValueEffect = this.changesSliderValue$.pipe(
